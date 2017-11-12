@@ -40,7 +40,51 @@ THE SOFTWARE.
 #define MPU6050_INCLUDE_DMP_MOTIONAPPS41
 
 #include "MPU6050.h"
-#include <avr/pgmspace.h>
+
+// Tom Carpenter's conditional PROGMEM code
+// http://forum.arduino.cc/index.php?topic=129407.0
+#ifdef __AVR__
+    #include <avr/pgmspace.h>
+#else
+    // Teensy 3.0 library conditional PROGMEM code from Paul Stoffregen
+    #ifndef __PGMSPACE_H_
+        #define __PGMSPACE_H_ 1
+        #include <inttypes.h>
+
+        #define PROGMEM
+        #define PGM_P  const char *
+        #define PSTR(str) (str)
+        #define F(x) x
+
+        typedef void prog_void;
+        typedef char prog_char;
+        //typedef unsigned char prog_uchar;
+        typedef int8_t prog_int8_t;
+        typedef uint8_t prog_uint8_t;
+        typedef int16_t prog_int16_t;
+        typedef uint16_t prog_uint16_t;
+        typedef int32_t prog_int32_t;
+        typedef uint32_t prog_uint32_t;
+        
+        #define strcpy_P(dest, src) strcpy((dest), (src))
+        #define strcat_P(dest, src) strcat((dest), (src))
+        #define strcmp_P(a, b) strcmp((a), (b))
+        
+        #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+        #define pgm_read_word(addr) (*(const unsigned short *)(addr))
+        #define pgm_read_dword(addr) (*(const unsigned long *)(addr))
+        #define pgm_read_float(addr) (*(const float *)(addr))
+        
+        #define pgm_read_byte_near(addr) pgm_read_byte(addr)
+        #define pgm_read_word_near(addr) pgm_read_word(addr)
+        #define pgm_read_dword_near(addr) pgm_read_dword(addr)
+        #define pgm_read_float_near(addr) pgm_read_float(addr)
+        #define pgm_read_byte_far(addr) pgm_read_byte(addr)
+        #define pgm_read_word_far(addr) pgm_read_word(addr)
+        #define pgm_read_dword_far(addr) pgm_read_dword(addr)
+        #define pgm_read_float_far(addr) pgm_read_float(addr)
+    #endif
+#endif
 
 // NOTE! Enabling DEBUG adds about 3.3kB to the flash program size.
 // Debug output is now working even on ATMega328P MCUs (e.g. Arduino Uno)
@@ -113,7 +157,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x25, 0x4D, 0x00, 0x2F, 0x70, 0x6D, 0x00, 0x00, 0x05, 0xAE, 0x00, 0x0C, 0x02, 0xD0,
-
+    
     // bank 2, 256 bytes
     0x00, 0x00, 0x00, 0x00, 0x00, 0x65, 0x00, 0x54, 0xFF, 0xEF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x01, 0x00, 0x00, 0x44, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x00,
@@ -131,7 +175,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x47, 0x78, 0xA2,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-
+    
     // bank 3, 256 bytes
     0xD8, 0xDC, 0xF4, 0xD8, 0xB9, 0xAB, 0xF3, 0xF8, 0xFA, 0xF1, 0xBA, 0xA2, 0xDE, 0xB2, 0xB8, 0xB4,
     0xA8, 0x81, 0x98, 0xF7, 0x4A, 0x90, 0x7F, 0x91, 0x6A, 0xF3, 0xF9, 0xDB, 0xA8, 0xF9, 0xB0, 0xBA,
@@ -149,7 +193,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
     0x7D, 0xAF, 0x83, 0xB5, 0x93, 0xF0, 0x00, 0x28, 0x50, 0xF5, 0xBA, 0xAD, 0x8F, 0x9F, 0x28, 0x54,
     0x7C, 0xB9, 0xF1, 0xA3, 0x86, 0x9F, 0x61, 0xA6, 0xDA, 0xDE, 0xDF, 0xDB, 0xB2, 0xB6, 0x8E, 0x9D,
     0xAE, 0xF5, 0x60, 0x68, 0x70, 0xB1, 0xB5, 0xF1, 0xDA, 0xA6, 0xDF, 0xD9, 0xA6, 0xFA, 0xA3, 0x86,
-
+    
     // bank 4, 256 bytes
     0x96, 0xDB, 0x31, 0xA6, 0xD9, 0xF8, 0xDF, 0xBA, 0xA6, 0x8F, 0xC2, 0xC5, 0xC7, 0xB2, 0x8C, 0xC1,
     0xB8, 0xA2, 0xDF, 0xDF, 0xDF, 0xA3, 0xDF, 0xDF, 0xDF, 0xD8, 0xD8, 0xF1, 0xB8, 0xA8, 0xB2, 0x86,
@@ -167,7 +211,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
     0x32, 0xD8, 0x70, 0x5D, 0xDA, 0x3A, 0xD8, 0x58, 0x79, 0xD9, 0x3A, 0xD8, 0x78, 0x93, 0xA3, 0x4D,
     0xDA, 0x2A, 0xD8, 0x48, 0x69, 0xD9, 0x2A, 0xD8, 0x68, 0x55, 0xDA, 0x32, 0xD8, 0x50, 0x71, 0xD9,
     0x32, 0xD8, 0x70, 0x5D, 0xDA, 0x3A, 0xD8, 0x58, 0x79, 0xD9, 0x3A, 0xD8, 0x78, 0xA8, 0x8A, 0x9A,
-
+    
     // bank 5, 256 bytes
     0xF0, 0x28, 0x50, 0x78, 0x9E, 0xF3, 0x88, 0x18, 0xF1, 0x9F, 0x1D, 0x98, 0xA8, 0xD9, 0x08, 0xD8,
     0xC8, 0x9F, 0x12, 0x9E, 0xF3, 0x15, 0xA8, 0xDA, 0x12, 0x10, 0xD8, 0xF1, 0xAF, 0xC8, 0x97, 0x87,
@@ -203,7 +247,7 @@ const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] PROGMEM = {
     0x81, 0xAD, 0xD9, 0x01, 0xD8, 0xF2, 0xAE, 0xDA, 0x26, 0xD8, 0x8E, 0x91, 0x29, 0x83, 0xA7, 0xD9,
     0xAD, 0xAD, 0xAD, 0xAD, 0xF3, 0x2A, 0xD8, 0xD8, 0xF1, 0xB0, 0xAC, 0x89, 0x91, 0x3E, 0x5E, 0x76,
     0xF3, 0xAC, 0x2E, 0x2E, 0xF1, 0xB1, 0x8C, 0x5A, 0x9C, 0xAC, 0x2C, 0x28, 0x28, 0x28, 0x9C, 0xAC,
-
+    
     // bank 7, 170 bytes (remainder)
     0x30, 0x18, 0xA8, 0x98, 0x81, 0x28, 0x34, 0x3C, 0x97, 0x24, 0xA7, 0x28, 0x34, 0x3C, 0x9C, 0x24,
     0xF2, 0xB0, 0x89, 0xAC, 0x91, 0x2C, 0x4C, 0x6C, 0x8A, 0x9B, 0x2D, 0xD9, 0xD8, 0xD8, 0x51, 0xD9,
@@ -335,9 +379,9 @@ uint8_t MPU6050::dmpInitialize() {
     DEBUG_PRINTLN(ygOffset);
     DEBUG_PRINT(F("Z gyro offset = "));
     DEBUG_PRINTLN(zgOffset);
-
+    
     I2Cdev::readByte(devAddr, MPU6050_RA_USER_CTRL, buffer); // ?
-
+    
     DEBUG_PRINTLN(F("Enabling interrupt latch, clear on any read, AUX bypass enabled"));
     I2Cdev::writeByte(devAddr, MPU6050_RA_INT_PIN_CFG, 0x32);
 
@@ -413,14 +457,14 @@ uint8_t MPU6050::dmpInitialize() {
             setOTPBankValid(false);
 
             DEBUG_PRINTLN(F("Setting X/Y/Z gyro offsets to previous values..."));
-            setXGyroOffset(xgOffset);
-            setYGyroOffset(ygOffset);
-            setZGyroOffset(zgOffset);
+            setXGyroOffsetTC(xgOffset);
+            setYGyroOffsetTC(ygOffset);
+            setZGyroOffsetTC(zgOffset);
 
-            DEBUG_PRINTLN(F("Setting X/Y/Z gyro user offsets to zero..."));
-            setXGyroOffsetUser(0);
-            setYGyroOffsetUser(0);
-            setZGyroOffsetUser(0);
+            //DEBUG_PRINTLN(F("Setting X/Y/Z gyro user offsets to zero..."));
+            //setXGyroOffset(0);
+            //setYGyroOffset(0);
+            //setZGyroOffset(0);
 
             DEBUG_PRINTLN(F("Writing final memory update 1/19 (function unknown)..."));
             uint8_t dmpUpdate[16], j;
@@ -526,7 +570,7 @@ uint8_t MPU6050::dmpInitialize() {
             DEBUG_PRINTLN(F("Writing final memory update 11/19 (function unknown)..."));
             for (j = 0; j < 4 || j < dmpUpdate[2] + 3; j++, pos++) dmpUpdate[j] = pgm_read_byte(&dmpUpdates[pos]);
             writeMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
-
+            
             DEBUG_PRINTLN(F("Reading final memory update 12/19 (function unknown)..."));
             for (j = 0; j < 4 || j < dmpUpdate[2] + 3; j++, pos++) dmpUpdate[j] = pgm_read_byte(&dmpUpdates[pos]);
             readMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
@@ -636,43 +680,43 @@ bool MPU6050::dmpPacketAvailable() {
 uint8_t MPU6050::dmpGetAccel(int32_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = ((packet[34] << 24) + (packet[35] << 16) + (packet[36] << 8) + packet[37]);
-    data[1] = ((packet[38] << 24) + (packet[39] << 16) + (packet[40] << 8) + packet[41]);
-    data[2] = ((packet[42] << 24) + (packet[43] << 16) + (packet[44] << 8) + packet[45]);
+    data[0] = (((uint32_t)packet[34] << 24) | ((uint32_t)packet[35] << 16) | ((uint32_t)packet[36] << 8) | packet[37]);
+    data[1] = (((uint32_t)packet[38] << 24) | ((uint32_t)packet[39] << 16) | ((uint32_t)packet[40] << 8) | packet[41]);
+    data[2] = (((uint32_t)packet[42] << 24) | ((uint32_t)packet[43] << 16) | ((uint32_t)packet[44] << 8) | packet[45]);
     return 0;
 }
 uint8_t MPU6050::dmpGetAccel(int16_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = (packet[34] << 8) + packet[35];
-    data[1] = (packet[38] << 8) + packet[39];
-    data[2] = (packet[42] << 8) + packet[43];
+    data[0] = (packet[34] << 8) | packet[35];
+    data[1] = (packet[38] << 8) | packet[39];
+    data[2] = (packet[42] << 8) | packet[43];
     return 0;
 }
 uint8_t MPU6050::dmpGetAccel(VectorInt16 *v, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    v -> x = (packet[34] << 8) + packet[35];
-    v -> y = (packet[38] << 8) + packet[39];
-    v -> z = (packet[42] << 8) + packet[43];
+    v -> x = (packet[34] << 8) | packet[35];
+    v -> y = (packet[38] << 8) | packet[39];
+    v -> z = (packet[42] << 8) | packet[43];
     return 0;
 }
 uint8_t MPU6050::dmpGetQuaternion(int32_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = ((packet[0] << 24) + (packet[1] << 16) + (packet[2] << 8) + packet[3]);
-    data[1] = ((packet[4] << 24) + (packet[5] << 16) + (packet[6] << 8) + packet[7]);
-    data[2] = ((packet[8] << 24) + (packet[9] << 16) + (packet[10] << 8) + packet[11]);
-    data[3] = ((packet[12] << 24) + (packet[13] << 16) + (packet[14] << 8) + packet[15]);
+    data[0] = (((uint32_t)packet[0] << 24) | ((uint32_t)packet[1] << 16) | ((uint32_t)packet[2] << 8) | packet[3]);
+    data[1] = (((uint32_t)packet[4] << 24) | ((uint32_t)packet[5] << 16) | ((uint32_t)packet[6] << 8) | packet[7]);
+    data[2] = (((uint32_t)packet[8] << 24) | ((uint32_t)packet[9] << 16) | ((uint32_t)packet[10] << 8) | packet[11]);
+    data[3] = (((uint32_t)packet[12] << 24) | ((uint32_t)packet[13] << 16) | ((uint32_t)packet[14] << 8) | packet[15]);
     return 0;
 }
 uint8_t MPU6050::dmpGetQuaternion(int16_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = ((packet[0] << 8) + packet[1]);
-    data[1] = ((packet[4] << 8) + packet[5]);
-    data[2] = ((packet[8] << 8) + packet[9]);
-    data[3] = ((packet[12] << 8) + packet[13]);
+    data[0] = ((packet[0] << 8) | packet[1]);
+    data[1] = ((packet[4] << 8) | packet[5]);
+    data[2] = ((packet[8] << 8) | packet[9]);
+    data[3] = ((packet[12] << 8) | packet[13]);
     return 0;
 }
 uint8_t MPU6050::dmpGetQuaternion(Quaternion *q, const uint8_t* packet) {
@@ -693,41 +737,25 @@ uint8_t MPU6050::dmpGetQuaternion(Quaternion *q, const uint8_t* packet) {
 uint8_t MPU6050::dmpGetGyro(int32_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = ((packet[16] << 24) + (packet[17] << 16) + (packet[18] << 8) + packet[19]);
-    data[1] = ((packet[20] << 24) + (packet[21] << 16) + (packet[22] << 8) + packet[23]);
-    data[2] = ((packet[24] << 24) + (packet[25] << 16) + (packet[26] << 8) + packet[27]);
+    data[0] = (((uint32_t)packet[16] << 24) | ((uint32_t)packet[17] << 16) | ((uint32_t)packet[18] << 8) | packet[19]);
+    data[1] = (((uint32_t)packet[20] << 24) | ((uint32_t)packet[21] << 16) | ((uint32_t)packet[22] << 8) | packet[23]);
+    data[2] = (((uint32_t)packet[24] << 24) | ((uint32_t)packet[25] << 16) | ((uint32_t)packet[26] << 8) | packet[27]);
     return 0;
 }
 uint8_t MPU6050::dmpGetGyro(int16_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = (packet[16] << 8) + packet[17];
-    data[1] = (packet[20] << 8) + packet[21];
-    data[2] = (packet[24] << 8) + packet[25];
-    return 0;
-}
-uint8_t MPU6050::dmpGetGyro(VectorInt16 *v, const uint8_t* packet) {
-    // TODO: accommodate different arrangements of sent data (ONLY default supported now)
-    if (packet == 0) packet = dmpPacketBuffer;
-    v -> x = (packet[16] << 8) + packet[17];
-    v -> y = (packet[20] << 8) + packet[21];
-    v -> z = (packet[24] << 8) + packet[25];
+    data[0] = (packet[16] << 8) | packet[17];
+    data[1] = (packet[20] << 8) | packet[21];
+    data[2] = (packet[24] << 8) | packet[25];
     return 0;
 }
 uint8_t MPU6050::dmpGetMag(int16_t *data, const uint8_t* packet) {
     // TODO: accommodate different arrangements of sent data (ONLY default supported now)
     if (packet == 0) packet = dmpPacketBuffer;
-    data[0] = (packet[28] << 8) + packet[29];
-    data[1] = (packet[30] << 8) + packet[31];
-    data[2] = (packet[32] << 8) + packet[33];
-    return 0;
-}
-uint8_t MPU6050::dmpGetMag(VectorInt16 *v, const uint8_t* packet) {
-    // TODO: accommodate different arrangements of sent data (ONLY default supported now)
-    if (packet == 0) packet = dmpPacketBuffer;
-    v -> x = (packet[28] << 8) + packet[29];
-    v -> y = (packet[30] << 8) + packet[31];
-    v -> z = (packet[32] << 8) + packet[33];
+    data[0] = (packet[28] << 8) | packet[29];
+    data[1] = (packet[30] << 8) | packet[31];
+    data[2] = (packet[32] << 8) | packet[33];
     return 0;
 }
 // uint8_t MPU6050::dmpSetLinearAccelFilterCoefficient(float coef);
@@ -801,7 +829,7 @@ uint8_t MPU6050::dmpReadAndProcessFIFOPacket(uint8_t numPackets, uint8_t *proces
 
         // process packet
         if ((status = dmpProcessFIFOPacket(buf)) > 0) return status;
-
+        
         // increment external process count variable, if supplied
         if (processed != 0) *processed++;
     }
@@ -822,4 +850,3 @@ uint16_t MPU6050::dmpGetFIFOPacketSize() {
 }
 
 #endif /* _MPU6050_9AXIS_MOTIONAPPS41_H_ */
-

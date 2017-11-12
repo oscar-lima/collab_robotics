@@ -38,16 +38,20 @@ THE SOFTWARE.
 #define _MPU6050_H_
 
 #include "I2Cdev.h"
-#include <avr/pgmspace.h>
 
-//Magnetometer Registers
-#define MPU9150_RA_MAG_ADDRESS		0x0C
-#define MPU9150_RA_MAG_XOUT_L		0x03
-#define MPU9150_RA_MAG_XOUT_H		0x04
-#define MPU9150_RA_MAG_YOUT_L		0x05
-#define MPU9150_RA_MAG_YOUT_H		0x06
-#define MPU9150_RA_MAG_ZOUT_L		0x07
-#define MPU9150_RA_MAG_ZOUT_H		0x08
+// supporting link:  http://forum.arduino.cc/index.php?&topic=143444.msg1079517#msg1079517
+// also: http://forum.arduino.cc/index.php?&topic=141571.msg1062899#msg1062899s
+
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#else
+//#define PROGMEM /* empty */
+//#define pgm_read_byte(x) (*(x))
+//#define pgm_read_word(x) (*(x))
+//#define pgm_read_float(x) (*(x))
+//#define PSTR(STR) STR
+#endif
+
 
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
@@ -65,6 +69,10 @@ THE SOFTWARE.
 #define MPU6050_RA_YA_OFFS_L_TC     0x09
 #define MPU6050_RA_ZA_OFFS_H        0x0A //[15:0] ZA_OFFS
 #define MPU6050_RA_ZA_OFFS_L_TC     0x0B
+#define MPU6050_RA_SELF_TEST_X      0x0D //[7:5] XA_TEST[4-2], [4:0] XG_TEST[4-0]
+#define MPU6050_RA_SELF_TEST_Y      0x0E //[7:5] YA_TEST[4-2], [4:0] YG_TEST[4-0]
+#define MPU6050_RA_SELF_TEST_Z      0x0F //[7:5] ZA_TEST[4-2], [4:0] ZG_TEST[4-0]
+#define MPU6050_RA_SELF_TEST_A      0x10 //[5:4] XA_TEST[1-0], [3:2] YA_TEST[1-0], [1:0] ZA_TEST[1-0]
 #define MPU6050_RA_XG_OFFS_USRH     0x13 //[15:0] XG_OFFS_USR
 #define MPU6050_RA_XG_OFFS_USRL     0x14
 #define MPU6050_RA_YG_OFFS_USRH     0x15 //[15:0] YG_OFFS_USR
@@ -163,6 +171,26 @@ THE SOFTWARE.
 #define MPU6050_RA_FIFO_COUNTL      0x73
 #define MPU6050_RA_FIFO_R_W         0x74
 #define MPU6050_RA_WHO_AM_I         0x75
+
+#define MPU6050_SELF_TEST_XA_1_BIT     0x07
+#define MPU6050_SELF_TEST_XA_1_LENGTH  0x03
+#define MPU6050_SELF_TEST_XA_2_BIT     0x05
+#define MPU6050_SELF_TEST_XA_2_LENGTH  0x02
+#define MPU6050_SELF_TEST_YA_1_BIT     0x07
+#define MPU6050_SELF_TEST_YA_1_LENGTH  0x03
+#define MPU6050_SELF_TEST_YA_2_BIT     0x03
+#define MPU6050_SELF_TEST_YA_2_LENGTH  0x02
+#define MPU6050_SELF_TEST_ZA_1_BIT     0x07
+#define MPU6050_SELF_TEST_ZA_1_LENGTH  0x03
+#define MPU6050_SELF_TEST_ZA_2_BIT     0x01
+#define MPU6050_SELF_TEST_ZA_2_LENGTH  0x02
+
+#define MPU6050_SELF_TEST_XG_1_BIT     0x04
+#define MPU6050_SELF_TEST_XG_1_LENGTH  0x05
+#define MPU6050_SELF_TEST_YG_1_BIT     0x04
+#define MPU6050_SELF_TEST_YG_1_LENGTH  0x05
+#define MPU6050_SELF_TEST_ZG_1_BIT     0x04
+#define MPU6050_SELF_TEST_ZG_1_LENGTH  0x05
 
 #define MPU6050_TC_PWR_MODE_BIT     7
 #define MPU6050_TC_OFFSET_BIT       6
@@ -420,9 +448,7 @@ class MPU6050 {
         // SMPLRT_DIV register
         uint8_t getRate();
         void setRate(uint8_t rate);
-        
-        uint8_t  checkMagStatus();
-     
+
         // CONFIG register
         uint8_t getExternalFrameSync();
         void setExternalFrameSync(uint8_t sync);
@@ -433,6 +459,15 @@ class MPU6050 {
         uint8_t getFullScaleGyroRange();
         void setFullScaleGyroRange(uint8_t range);
 
+		// SELF_TEST registers
+		uint8_t getAccelXSelfTestFactoryTrim();
+		uint8_t getAccelYSelfTestFactoryTrim();
+		uint8_t getAccelZSelfTestFactoryTrim();
+
+		uint8_t getGyroXSelfTestFactoryTrim();
+		uint8_t getGyroYSelfTestFactoryTrim();
+		uint8_t getGyroZSelfTestFactoryTrim();
+		
         // ACCEL_CONFIG register
         bool getAccelXSelfTest();
         void setAccelXSelfTest(bool enabled);
@@ -601,15 +636,13 @@ class MPU6050 {
         int16_t getRotationY();
         int16_t getRotationZ();
 
-        // MAG_*OUT_* registers
-        void getMag(int16_t* x, int16_t* y, int16_t* z);
-
         // EXT_SENS_DATA_* registers
         uint8_t getExternalSensorByte(int position);
         uint16_t getExternalSensorWord(int position);
         uint32_t getExternalSensorDWord(int position);
 
         // MOT_DETECT_STATUS register
+        uint8_t getMotionStatus();
         bool getXNegMotionDetected();
         bool getXPosMotionDetected();
         bool getYNegMotionDetected();
@@ -694,16 +727,16 @@ class MPU6050 {
         // XG_OFFS_TC register
         uint8_t getOTPBankValid();
         void setOTPBankValid(bool enabled);
-        int8_t getXGyroOffset();
-        void setXGyroOffset(int8_t offset);
+        int8_t getXGyroOffsetTC();
+        void setXGyroOffsetTC(int8_t offset);
 
         // YG_OFFS_TC register
-        int8_t getYGyroOffset();
-        void setYGyroOffset(int8_t offset);
+        int8_t getYGyroOffsetTC();
+        void setYGyroOffsetTC(int8_t offset);
 
         // ZG_OFFS_TC register
-        int8_t getZGyroOffset();
-        void setZGyroOffset(int8_t offset);
+        int8_t getZGyroOffsetTC();
+        void setZGyroOffsetTC(int8_t offset);
 
         // X_FINE_GAIN register
         int8_t getXFineGain();
@@ -730,16 +763,16 @@ class MPU6050 {
         void setZAccelOffset(int16_t offset);
 
         // XG_OFFS_USR* registers
-        int16_t getXGyroOffsetUser();
-        void setXGyroOffsetUser(int16_t offset);
+        int16_t getXGyroOffset();
+        void setXGyroOffset(int16_t offset);
 
         // YG_OFFS_USR* register
-        int16_t getYGyroOffsetUser();
-        void setYGyroOffsetUser(int16_t offset);
+        int16_t getYGyroOffset();
+        void setYGyroOffset(int16_t offset);
 
         // ZG_OFFS_USR* register
-        int16_t getZGyroOffsetUser();
-        void setZGyroOffsetUser(int16_t offset);
+        int16_t getZGyroOffset();
+        void setZGyroOffset(int16_t offset);
         
         // INT_ENABLE register (DMP functions)
         bool getIntPLLReadyEnabled();
@@ -836,8 +869,7 @@ class MPU6050 {
             uint8_t dmpGetRelativeQuaternion(Quaternion *data, const uint8_t* packet=0);
             uint8_t dmpGetGyro(int32_t *data, const uint8_t* packet=0);
             uint8_t dmpGetGyro(int16_t *data, const uint8_t* packet=0);
-            uint8_t dmpGetGyro(VectorInt16 *v, const uint8_t* packet=0);                  	
-            uint8_t dmpGetMag (VectorInt16 *v, const uint8_t* packet=0);
+            uint8_t dmpGetGyro(VectorInt16 *v, const uint8_t* packet=0);
             uint8_t dmpSetLinearAccelFilterCoefficient(float coef);
             uint8_t dmpGetLinearAccel(int32_t *data, const uint8_t* packet=0);
             uint8_t dmpGetLinearAccel(int16_t *data, const uint8_t* packet=0);
@@ -940,8 +972,7 @@ class MPU6050 {
             uint8_t dmpGetGyro(int16_t *data, const uint8_t* packet=0);
             uint8_t dmpGetGyro(VectorInt16 *v, const uint8_t* packet=0);
             uint8_t dmpGetMag(int16_t *data, const uint8_t* packet=0);
-            uint8_t dmpGetMag(VectorInt16 *v, const uint8_t* packet=0);
-	    uint8_t dmpSetLinearAccelFilterCoefficient(float coef);
+            uint8_t dmpSetLinearAccelFilterCoefficient(float coef);
             uint8_t dmpGetLinearAccel(int32_t *data, const uint8_t* packet=0);
             uint8_t dmpGetLinearAccel(int16_t *data, const uint8_t* packet=0);
             uint8_t dmpGetLinearAccel(VectorInt16 *v, const uint8_t* packet=0);
@@ -999,4 +1030,3 @@ class MPU6050 {
 };
 
 #endif /* _MPU6050_H_ */
-
